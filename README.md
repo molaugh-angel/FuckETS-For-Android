@@ -1,4 +1,4 @@
-# ETS 资源查看器
+# FuckETS-For-Android
 
 通过 Shizuku API 提权读取 `/storage/emulated/0/Android/data/com.ets100.secondary/files/Download/ETS_SECONDARY/resource/` 下的资源文件夹，按时间分组展示内容。
 
