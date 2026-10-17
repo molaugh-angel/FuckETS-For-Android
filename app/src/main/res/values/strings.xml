@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ETS资源查看器</string>
+    <string name="app_name">FuckETS</string>
 
     <!-- 关于页 -->
-    <string name="about_slogan">ETS 试题资源 · 分组阅读工具</string>
+    <string name="about_slogan">FuckETS · ETS 试题资源分组阅读工具</string>
     <string name="about_logo_desc">应用标志</string>
     <string name="about_section_basic">基本信息</string>
     <string name="about_section_intro">功能简介</string>
@@ -17,5 +17,5 @@
     <string name="about_system">系统</string>
     <string name="about_open_log">查看运行日志</string>
     <string name="about_version_fmt">版本 %1$s</string>
-    <string name="about_intro_body">以 Shizuku 授予的 shell 权限读取 ETS 试题资源目录，自动剔除无 content.json 的文件夹，按时间每三个分为一组，分别解析 Part A / B / C 并去掉 HTML 标签后展示。支持下拉刷新、分组折叠、长按删除，以及本地运行日志导出。</string>
+    <string name="about_intro_body">以 Shizuku 授予的 shell 权限读取 ETS 试题资源目录，自动剔除无 content.json 的文件夹，按时间以 A→B→C 顺序分组（已分组的保持稳定），分别解析 Part A / B / C 并去掉 HTML 标签后展示。支持底部 Dock 快捷操作、分组折叠动画、长按删除、定时清理、自动更新检查，以及本地运行日志导出。</string>
 </resources>

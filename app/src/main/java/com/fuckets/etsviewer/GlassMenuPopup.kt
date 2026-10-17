@@ -48,11 +48,18 @@ object GlassMenuPopup {
     )
 
     /**
-     * 在 [anchor] 下方（右对齐）弹出玻璃菜单。
+     * 弹出玻璃菜单。
      *
+     * @param above false：在 [anchor] 下方弹出（顶栏场景）；
+     *              true：贴着屏幕底部、在 [anchor] 上方弹出（底部 Dock 场景）
      * @param dividerAfter 需要在其后插入分隔线的下标集合，例如 setOf(1) 表示第 2 项之后分组
      */
-    fun show(anchor: View, items: List<Item>, dividerAfter: Set<Int> = emptySet()) {
+    fun show(
+        anchor: View,
+        items: List<Item>,
+        dividerAfter: Set<Int> = emptySet(),
+        above: Boolean = false
+    ) {
         val ctx = anchor.context
         val inflater = LayoutInflater.from(ctx)
         val content = inflater.inflate(R.layout.popup_menu_glass, null) as LinearLayout
@@ -137,7 +144,21 @@ object GlassMenuPopup {
 
         popup.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // 点外部可关闭
         popup.elevation = 16f * density
-        popup.animationStyle = R.style.GlassMenuPopupAnimation
-        popup.showAsDropDown(anchor, 0, (4 * density).toInt(), Gravity.END)
+        if (above) {
+            // 底部 Dock 场景：贴屏幕底部右侧弹出，向上展开
+            popup.animationStyle = R.style.GlassMenuPopupAnimationAbove
+            content.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val yOffset = anchor.height + (12 * density).toInt()
+            popup.showAtLocation(
+                anchor, Gravity.BOTTOM or Gravity.END,
+                (12 * density).toInt(), yOffset
+            )
+        } else {
+            popup.animationStyle = R.style.GlassMenuPopupAnimation
+            popup.showAsDropDown(anchor, 0, (4 * density).toInt(), Gravity.END)
+        }
     }
 }

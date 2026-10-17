@@ -2,12 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 自动更新检查需要联网 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".EtsApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="ETS资源查看器"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.ETSViewer"
         tools:targetApi="34">

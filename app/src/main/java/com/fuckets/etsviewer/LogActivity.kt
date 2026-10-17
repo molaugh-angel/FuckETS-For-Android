@@ -44,7 +44,7 @@ class LogActivity : AppCompatActivity() {
             val text = currentText()
             val send = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, "ETS资源查看器-运行日志")
+                putExtra(Intent.EXTRA_SUBJECT, "FuckETS-运行日志")
                 putExtra(Intent.EXTRA_TEXT, text.takeLast(100_000))
             }
             startActivity(Intent.createChooser(send, "导出日志"))

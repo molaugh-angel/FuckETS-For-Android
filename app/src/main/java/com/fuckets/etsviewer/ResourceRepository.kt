@@ -1,5 +1,6 @@
 package com.fuckets.etsviewer
 
+import android.content.Context
 import androidx.core.text.HtmlCompat
 import org.json.JSONArray
 import org.json.JSONObject
@@ -69,26 +70,45 @@ object ResourceRepository {
     /** 排除的文件夹名 */
     private val EXCLUDED = setOf("common")
 
+    // ---- 分组持久化：已分组的文件夹不再重新分组，新文件夹才按规则分入新组 ----
+    private const val PREFS_GROUPING = "ets_grouping"
+    private const val KEY_GROUPS = "groups_json"
+
     /**
-     * 加载全部文件夹 → 排除 common → 按时间排序 → 剔除无 content.json 的 →
-     * 以 A→B→C 顺序为准分组（顺序回退即另起新组，组内按 A、B、C 排列）→ 解析
+     * 加载全部文件夹 → 排除 common → 按时间排序 → 剔除无 content.json 的 → 分组：
+     * 1. 已分组的（SharedPreferences 里有记录）保持原分组原顺序，不再重新分组；
+     * 2. 新出现的文件夹按时间序以 A→B→C 为准分入新组（顺序回退即封箱另起），追加在后面。
      */
-    fun load(): List<PartGroup> {
+    fun load(context: Context): List<PartGroup> {
         val all = listFolders()
         AppLog.i("Repo", "扫描到文件夹 ${all.size} 个")
         val noJson = all.count { it.contentJson == null }
         if (noJson > 0) AppLog.w("Repo", "其中 $noJson 个缺少 content.json，已剔除")
 
         val folders = all
-            .filter { it.contentJson != null }          // 无 content.json 的剔除（之后分组即为"重新分组"）
+            .filter { it.contentJson != null }          // 无 content.json 的剔除
             .sortedBy { it.timestamp }                   // 按时间排序
         AppLog.d("Repo", "排序后: ${folders.map { "${it.name}(${it.timestamp})" }}")
 
-        // 分组：先按时间排好序（上面已 sortedBy timestamp），再以 A→B→C 的顺序为准——
-        // 一个 Part 只有当它的类型"排在当前组最后一个类型之后"时才能加入当前组，
-        // 一旦顺序回退（如 C 后面来了 A，或同类型重复），说明新的一组开始了，封箱另起。
-        // 这样单个异常文件夹（重拍/漏拍）只影响自己所在的边界，不会连锁错位。
+        val byName = folders.associateBy { it.name }
+        val used = mutableSetOf<String>()
         val groups = mutableListOf<PartGroup>()
+
+        // ① 已分组的原样保留（被删除的文件夹自动缺席）
+        val stored = readStoredGroups(context)
+        AppLog.d("Repo", "已保存的分组 ${stored.size} 组")
+        for (names in stored) {
+            val parts = names.mapNotNull { byName[it] }
+                .filter { it.name !in used }
+                .mapNotNull { parsePart(it) }
+                .sortedBy { it.type }
+            if (parts.isNotEmpty()) {
+                parts.forEach { used.add(it.folderName) }
+                groups.add(PartGroup(parts))
+            }
+        }
+
+        // ② 新文件夹：以 A→B→C 顺序为准，顺序回退（或同类型重复）即封箱另起新组
         var current = mutableListOf<Part>()
         fun closeGroup(reason: String) {
             if (current.isEmpty()) return
@@ -96,8 +116,11 @@ object ResourceRepository {
             AppLog.d("Repo", "第 ${groups.size} 组封箱（$reason）：${current.map { it.type }}")
             current = mutableListOf()
         }
+        var newCount = 0
         for (folder in folders) {
+            if (folder.name in used) continue
             val part = parsePart(folder) ?: continue
+            newCount++
             val last = current.lastOrNull()
             if (last != null && part.type <= last.type) {
                 closeGroup("顺序回退 ${last.type} → ${part.type}，以 A→B→C 为准另起新组")
@@ -105,6 +128,9 @@ object ResourceRepository {
             current.add(part)
         }
         closeGroup("收尾")
+        if (newCount > 0) AppLog.i("Repo", "新增 $newCount 个未分组文件夹，已按规则分组")
+
+        persistGroups(context, groups)
 
         // 缺类型的组只是数据不完整，属正常情况，但记录日志方便排查
         groups.forEachIndexed { gi, g ->
@@ -115,6 +141,43 @@ object ResourceRepository {
         }
         AppLog.i("Repo", "分组完成：${folders.size} 个文件夹 → ${groups.size} 组")
         return groups
+    }
+
+    /** 按保留天数清理过期试题文件夹；返回删除结果 */
+    fun cleanupOlderThan(retentionDays: Int): DeleteResult {
+        val cutoffSec = System.currentTimeMillis() / 1000 - retentionDays.toLong() * 86_400
+        val old = listFolders().filter { it.timestamp < cutoffSec }.map { it.name }
+        AppLog.i("Repo", "定时清理：保留最近 $retentionDays 天，命中 ${old.size} 个过期文件夹")
+        if (old.isEmpty()) return DeleteResult(0, emptyList())
+        return deleteFolders(old)
+    }
+
+    /** 读取已保存的分组（每组是一串文件夹名） */
+    private fun readStoredGroups(context: Context): List<List<String>> {
+        val raw = context.getSharedPreferences(PREFS_GROUPING, Context.MODE_PRIVATE)
+            .getString(KEY_GROUPS, null) ?: return emptyList()
+        return try {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).map { gi ->
+                val inner = arr.getJSONArray(gi)
+                (0 until inner.length()).map { inner.getString(it) }
+            }
+        } catch (e: Exception) {
+            AppLog.w("Repo", "已保存的分组数据损坏，忽略：${e.message}")
+            emptyList()
+        }
+    }
+
+    /** 把当前分组结果写回（只存文件夹名，顺序即分组顺序） */
+    private fun persistGroups(context: Context, groups: List<PartGroup>) {
+        val arr = JSONArray()
+        for (g in groups) {
+            val inner = JSONArray()
+            g.parts.forEach { inner.put(it.folderName) }
+            arr.put(inner)
+        }
+        context.getSharedPreferences(PREFS_GROUPING, Context.MODE_PRIVATE)
+            .edit().putString(KEY_GROUPS, arr.toString()).apply()
     }
 
     /**

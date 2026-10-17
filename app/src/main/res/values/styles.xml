@@ -19,9 +19,36 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- 玻璃菜单弹窗的进出场动画 -->
+    <!-- 玻璃菜单弹窗的进出场动画（从右上角锚点向下展开） -->
     <style name="GlassMenuPopupAnimation">
         <item name="android:windowEnterAnimation">@anim/menu_glass_in</item>
         <item name="android:windowExitAnimation">@anim/menu_glass_out</item>
+    </style>
+
+    <!-- 玻璃菜单弹窗的进出场动画（从底部 Dock 向上展开） -->
+    <style name="GlassMenuPopupAnimationAbove">
+        <item name="android:windowEnterAnimation">@anim/menu_glass_in_above</item>
+        <item name="android:windowExitAnimation">@anim/menu_glass_out_above</item>
+    </style>
+
+    <!-- 底部 Dock 栏的一项：图标在上、文字在下，整格可点。
+         注意：layout_width/weight 写在布局里（style 里的 layout_* 对 XML 声明的 View 不生效） -->
+    <style name="DockItem">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+
+    <style name="DockItemIcon">
+        <item name="tint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="DockItemText">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textSize">11sp</item>
     </style>
 </resources>

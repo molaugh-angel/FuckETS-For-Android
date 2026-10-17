@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
-                app:title="ETS 资源查看器"
+                app:title="@string/app_name"
                 app:titleCentered="false" />
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -50,7 +50,7 @@
                     android:paddingStart="14dp"
                     android:paddingEnd="14dp"
                     android:paddingTop="14dp"
-                    android:paddingBottom="24dp" />
+                    android:paddingBottom="100dp" />
 
                 <TextView
                     android:id="@+id/statusText"
@@ -65,5 +65,99 @@
                     android:visibility="gone" />
             </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- 底部 Dock 栏：玻璃面板（背景在 MainActivity 里用 LiquidGlass 生成），
+             刷新 / 展开全部 / 收起全部 / 更多（更多弹出玻璃菜单） -->
+        <LinearLayout
+            android:id="@+id/dockBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="14dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/dockRefresh"
+                style="@style/DockItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <androidx.appcompat.widget.AppCompatImageView
+                    style="@style/DockItemIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="刷新"
+                    app:srcCompat="@drawable/ic_refresh" />
+                <TextView
+                    style="@style/DockItemText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="刷新" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockExpand"
+                style="@style/DockItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <androidx.appcompat.widget.AppCompatImageView
+                    style="@style/DockItemIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="展开全部"
+                    app:srcCompat="@drawable/ic_unfold_more" />
+                <TextView
+                    style="@style/DockItemText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="展开全部" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockCollapse"
+                style="@style/DockItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <androidx.appcompat.widget.AppCompatImageView
+                    style="@style/DockItemIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="收起全部"
+                    app:srcCompat="@drawable/ic_unfold_less" />
+                <TextView
+                    style="@style/DockItemText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="收起全部" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockMore"
+                style="@style/DockItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <androidx.appcompat.widget.AppCompatImageView
+                    style="@style/DockItemIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="更多"
+                    app:srcCompat="@drawable/ic_more_horiz" />
+                <TextView
+                    style="@style/DockItemText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="更多" />
+            </LinearLayout>
+        </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </FrameLayout>
